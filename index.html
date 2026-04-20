@@ -1066,6 +1066,11 @@ async function handleLogin(selectedRole) {
     isAuthenticated = true;
     activeSidebarItem = 'Dashboard';
 
+    // Auto-register this device for push alerts when logging in as guidance
+    if (selectedRole === 'guidance') {
+      registerAsCounselor();
+    }
+
     loadDataFromFirestore();
     addLog(`Logged in as ${selectedRole}`, email, 'info');
     render();
@@ -1362,6 +1367,10 @@ async function handleForgotPassword() {
 }
 
 function logout() {
+  // If guidance counselor is logging out, remove the push tag from this device
+  if (currentRole === 'guidance') {
+    unregisterAsCounselor();
+  }
   firestoreUnsubscribes.forEach(u => u());
   firestoreUnsubscribes = [];
   const wasAnonymous = isAnonymous;
@@ -1479,8 +1488,44 @@ function canDelete(item, type) {
   return false;
 }
 
+// ── ONESIGNAL: Register this device as the Guidance Counselor ──
+// Called automatically after a successful guidance login.
+// Tags this device with user_role=guidance so push alerts are
+// delivered ONLY to the counselor — even when offline or app is closed.
+function registerAsCounselor() {
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    try {
+      // Request push permission if not yet granted
+      const permission = await OneSignal.Notifications.permission;
+      if (!permission) {
+        await OneSignal.Notifications.requestPermission();
+      }
+      // Tag this device as the guidance counselor
+      await OneSignal.User.addTag("user_role", "guidance");
+      console.log("[QHsafety] Device registered as Guidance Counselor for push alerts.");
+    } catch (e) {
+      console.warn("[QHsafety] Could not register counselor push tag:", e);
+    }
+  });
+}
+
+// ── ONESIGNAL: Remove counselor tag on logout ──
+function unregisterAsCounselor() {
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    try {
+      await OneSignal.User.removeTag("user_role");
+    } catch (e) {
+      console.warn("[QHsafety] Could not remove counselor push tag:", e);
+    }
+  });
+}
+
 /** * 🚨 THE MESSENGER FUNCTION 
- * Ensure this is pasted at the bottom of your script tag 
+ * Sends a push notification ONLY to devices tagged as guidance counselor.
+ * Delivered via OneSignal → OS push service (FCM/APNs), so it arrives
+ * even when the counselor's browser/tab is closed or device is locked.
  */
 async function sendOneSignalPush(title, message) {
   try {
@@ -1488,14 +1533,15 @@ async function sendOneSignalPush(title, message) {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": "os_v2_app_tkhwxh6ay5gsnnlxaedv4ecys4h6itlxch5ucuefoplggigjv65ge2ks2c237lqclhmi3uoigecbwz3r5mfdu5oahyeud5ux6uhqfcy"
+        "Authorization": "Key os_v2_app_tkhwxh6ay5gsnnlxaedv4ecys6pl36kd3cvuagejvywaofnlplgyw7g5jrjyyso655vah6c6bke6wqgctopdcvuvdpixrgb3cjyfwli"
       },
       body: JSON.stringify({
         app_id: "9a8f6b9f-c0c7-4d26-b577-01075e105897",
-        included_segments: ["Subscribed Users"],
+        // Target ONLY devices tagged as the guidance counselor (not all users)
+        filters: [{ "field": "tag", "key": "user_role", "relation": "=", "value": "guidance" }],
         headings: { "en": title },
         contents: { "en": message },
-        url: window.location.href 
+        url: window.location.href
       })
     });
     return await response.json();
@@ -2242,28 +2288,6 @@ if(activeSidebarItem==='Postings') {
       // ── SETTINGS ──
       if(activeSidebarItem==='Settings') return `
 <div class="max-w-xl">
-  ${(currentRole==='guidance'||currentRole==='admin')?`
-  <div class="p-5 rounded-xl mb-6" style="background:#fff8e1;border:2px solid #ffe082">
-    <div class="flex items-center gap-2 mb-3"><span style="font-size:18px">📧</span><h3 class="font-bold" style="color:#5d4037">Gmail Email Notifications</h3></div>
-    <p class="text-sm mb-3" style="color:#5d4037;line-height:1.6">Email notifications are powered by <strong>EmailJS</strong> (free tier — 200 emails/month). To enable:</p>
-    <ol class="text-sm mb-4" style="color:#5d4037;line-height:2;padding-left:18px">
-      <li>Go to <strong>emailjs.com</strong> → Create a free account</li>
-      <li>Add a <strong>Gmail service</strong> (connect your guidance Gmail)</li>
-      <li>Create two email templates:
-        <ul style="padding-left:14px;list-style:disc">
-          <li><code>template_student_notify</code> — for student reply alerts<br><span style="font-size:11px">Variables: {{to_email}}, {{to_name}}, {{post_title}}, {{guidance_message}}, {{sent_at}}</span></li>
-          <li><code>template_guidance_alert</code> — for high-risk alerts to counselor<br><span style="font-size:11px">Variables: {{to_email}}, {{alert_type}}, {{author}}, {{reason}}, {{description}}, {{ai_score}}, {{risk_level}}, {{risk_reasons}}, {{sent_at}}</span></li>
-        </ul>
-      </li>
-      <li>Copy your <strong>Public Key</strong> and <strong>Service ID</strong></li>
-      <li>In the HTML file, find <code>const EJS = {</code> and fill in:<br><code>publicKey, serviceId, guidanceEmail</code></li>
-    </ol>
-    <div class="p-3 rounded-lg text-xs" style="background:#efebe9;color:#4e342e;font-family:monospace;line-height:1.8">
-      publicKey: 'user_xxxxxxxxxxxxxxx'<br>
-      serviceId: 'service_xxxxxxx'<br>
-      guidanceEmail: 'counselor@school.edu'
-    </div>
-  </div>`:''}
   <div class="p-6 rounded-xl mb-6" style="background:${config.surface_color}">
     <h3 class="font-bold mb-4" style="color:${config.text_color}">${tr('appearance')}</h3>
     <div class="flex items-center justify-between p-4 rounded-lg mb-3" style="background:${config.text_color}08">
