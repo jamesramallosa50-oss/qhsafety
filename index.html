@@ -15,16 +15,17 @@
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-              appId: "9a8f6b9f-c0c7-4d26-b577-01075e105897",
-                    safari_web_id: "web.onesignal.auto.512e7622-1d45-4df4-947f-a5316fda3b8e",
-                          notifyButton: {
-                                  enable: true,
-                                        },
-                                            });
-                                              });
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "9a8f6b9f-c0c7-4d26-b577-01075e105897",
+      safari_web_id: "web.onesignal.auto.512e7622-1d45-4df4-947f-a5316fda3b8e",
+      notifyButton: {
+        enable: true,
+      },
+    });
+  });
 </script>
+  <style>
 
       .guidance-high-risk {
       box-shadow: 0 0 20px rgba(239,83,80,0.9), 0 0 0 2px #ef5350;
@@ -1532,7 +1533,7 @@ async function sendOneSignalPush(title, message) {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": "Key os_v2_app_tkhwxh6ay5gsnnlxaedv4ecys74xqwo22rwuyvf2wk43yoip2eln4vsjtgoqrsddiitjg7pw7m6326bdlhk6dx2xqprh2mr3255ulcy"
+        "Authorization": "Key os_v2_app_tkhwxh6ay5gsnnlxaedv4ecys6pl36kd3cvuagejvywaofnlplgyw7g5jrjyyso655vah6c6bke6wqgctopdcvuvdpixrgb3cjyfwli"
       },
       body: JSON.stringify({
         app_id: "9a8f6b9f-c0c7-4d26-b577-01075e105897",
