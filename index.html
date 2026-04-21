@@ -1965,7 +1965,7 @@ if(activeSidebarItem==='Postings') {
           const gc = getGlowClass(p, isPending);
 
           return `
-      <div class="p-6 rounded-xl card-hover ${gc}" 
+      <div data-post-id="${p.id}" class="p-6 rounded-xl card-hover ${gc}" 
            style="background:${config.surface_color};border:1px solid ${config.text_color}11">
         <div class="flex items-start justify-between mb-3">
           <div class="flex-1">
@@ -2401,6 +2401,16 @@ if(activeSidebarItem==='Postings') {
           expandedConsult = Number(id);
         }
         render();
+
+        // Scroll to the specific post/consultation
+        setTimeout(() => {
+          const el = document.querySelector(`[data-post-id="${id}"]`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.style.outline = '3px solid #ef5350';
+            setTimeout(() => { el.style.outline = ''; }, 3000);
+          }
+        }, 300);
 
         // Show a banner about why they're here
         setTimeout(() => {
