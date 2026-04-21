@@ -36,7 +36,6 @@ export default async function handler(req, res) {
       large_icon: "https://qhsafety.vercel.app/icon.png",
       // Make it urgent / high priority
       priority: 10,
-      android_channel_id: "qhsafety-alerts",
       // Keep notification visible until dismissed
       ttl: 86400,
     };
