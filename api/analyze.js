@@ -1,13 +1,17 @@
 export default async function handler(req, res) {
-  // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { text } = req.body;
-
   if (!text) {
     return res.status(400).json({ error: 'text is required' });
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    console.error('[analyze] ANTHROPIC_API_KEY environment variable is not set');
+    return res.status(500).json({ error: 'Server misconfiguration' });
   }
 
   try {
@@ -15,7 +19,7 @@ export default async function handler(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": "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",
+        "x-api-key": apiKey,
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
@@ -57,17 +61,22 @@ Return exactly: {"score": <0-20 integer>, "level": <"Low"|"Low-Medium"|"Medium"|
     });
 
     const data = await response.json();
+
+    if (!response.ok) {
+      console.error('[analyze] Anthropic API error:', JSON.stringify(data));
+      return res.status(500).json({ error: 'AI analysis failed', detail: data });
+    }
+
     const raw = (data.content || []).map(i => i.text || '').join('').replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(raw);
 
-    // Validate shape before returning
     if (typeof parsed.score === 'number' && parsed.level && Array.isArray(parsed.reasons)) {
       return res.status(200).json(parsed);
     } else {
       throw new Error('Unexpected response shape from Claude');
     }
   } catch (e) {
-    console.error('[analyze] Claude API error:', e);
+    console.error('[analyze] Error:', e);
     return res.status(500).json({ error: 'AI analysis failed' });
   }
 }
