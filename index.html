@@ -1038,8 +1038,9 @@ async function handleLogin(selectedRole) {
     }
 
     loadDataFromFirestore();
-    addLog(`Logged in as ${selectedRole}`, email, 'info');
-    render();
+addLog(`Logged in as ${selectedRole}`, email, 'info');
+render();
+setTimeout(handleDeepLink, 1000); // 👈 add this
 
   } catch (error) {
     loginError = friendlyAuthError(error.code, error.message);
