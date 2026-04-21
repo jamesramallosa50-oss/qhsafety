@@ -2407,10 +2407,14 @@ if(activeSidebarItem==='Postings') {
         }
         render();
 
-        // Scroll to the specific post/consultation
-        setTimeout(() => {
+        // Scroll to the specific post — poll until element appears in DOM
+        let scrollAttempts = 0;
+        const scrollCheck = setInterval(() => {
+          scrollAttempts++;
+          if (scrollAttempts > 20) { clearInterval(scrollCheck); return; }
           const el = document.querySelector(`[data-post-id="${id}"]`);
           if (el) {
+            clearInterval(scrollCheck);
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             el.style.outline = '3px solid #ef5350';
             setTimeout(() => { el.style.outline = ''; }, 3000);
