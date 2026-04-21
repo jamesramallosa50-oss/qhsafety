@@ -1,13 +1,11 @@
 {
   "cleanUrls": true,
   "functions": {
-    "api/notify.js": { "memory": 128 },
-    "api/analyze.js": { "memory": 128 }
+    "notify.js": { "runtime": "edge" }
   },
   "rewrites": [
-    { "source": "/api/notify", "destination": "/api/notify.js" },
-    { "source": "/api/analyze", "destination": "/api/analyze.js" },
-    { "source": "/OneSignalSDKWorker.js", "destination": "/OneSignalSDKWorker.js" },
-    { "source": "/OneSignalSDKUpdaterWorker.js", "destination": "/OneSignalSDKWorker.js" }
+    { "source": "/api/notify", "destination": "/notify.js" },
+    { "source": "/OneSignalSDKWorker.js", "destination": "/public/OneSignalSDKWorker.js" },
+    { "source": "/OneSignalSDKUpdaterWorker.js", "destination": "/public/OneSignalSDKUpdaterWorker.js" }
   ]
 }
