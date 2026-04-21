@@ -1533,10 +1533,10 @@ async function sendOneSignalPush(title, message) {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": "Key os_v2_app_tkhwxh6ay5gsnnlxaedv4ecys6pl36kd3cvuagejvywaofnlplgyw7g5jrjyyso655vah6c6bke6wqgctopdcvuvdpixrgb3cjyfwli"
+        "Authorization": "Key os_v2_app_jov65obr6rgpvcum2xaqsjrnpcm72otowazuwkmvjwqakvkbxnshyqsjw7rjqdgrgjrxu4suzgvhscc3zx3cduznmzk3a4lz4e5vrna"
       },
       body: JSON.stringify({
-        app_id: "9a8f6b9f-c0c7-4d26-b577-01075e105897",
+        app_id: "4babeeb8-31f4-4cfa-8a8c-d5c109262d78",
         // Target ONLY devices tagged as the guidance counselor (not all users)
         filters: [{ "field": "tag", "key": "user_role", "relation": "=", "value": "guidance" }],
         headings: { "en": title },
