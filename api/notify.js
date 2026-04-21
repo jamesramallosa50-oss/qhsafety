@@ -9,8 +9,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'title and message are required' });
   }
 
-  const API_KEY = "Key os_v2_app_jov65obr6rgpvcum2xaqsjrnpcz7orwicp3udjegbypielwmbysub6d32t4jwvuasuieeufhwxpto76dbmzvqcopo2gz5qkk7ppw7ly";
-  const APP_ID = "4babeeb8-31f4-4cfa-8a8c-d5c109262d78";
+  const apiKey = process.env.ONESIGNAL_API_KEY;
+  if (!apiKey) {
+    console.error('[notify] ONESIGNAL_API_KEY environment variable is not set');
+    return res.status(500).json({ error: 'Server misconfiguration' });
+  }
 
   const notifUrl = url || 'https://qhsafety.vercel.app';
 
@@ -23,7 +26,7 @@ export default async function handler(req, res) {
 
   try {
     const body = {
-      app_id: APP_ID,
+      app_id: "4babeeb8-31f4-4cfa-8a8c-d5c109262d78",
       filters: [{ field: "tag", key: "user_role", relation: "=", value: role }],
       headings:  { en: title },
       contents:  { en: message },
@@ -38,7 +41,7 @@ export default async function handler(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": API_KEY
+        "Authorization": `Key ${apiKey}`
       },
       body: JSON.stringify(body)
     });
