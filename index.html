@@ -18,9 +18,8 @@
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "4babeeb8-31f4-4cfa-8a8c-d5c109262d78",
-      notifyButton: {
-        enable: true,
-      },
+      notifyButton: { enable: false },
+      allowLocalhostAsSecureOrigin: true,
     });
   });
 </script>
@@ -1461,6 +1460,28 @@ function canDelete(item, type) {
   return false;
 }
 
+// ── ONESIGNAL: Manual push enable button ──
+async function enablePushNotifications() {
+  try {
+    const permission = OneSignal.Notifications.permission;
+    const tag = currentRole === 'guidance' ? 'guidance' : 'student';
+    if (permission) {
+      await OneSignal.User.addTag("user_role", tag);
+      showModal('✅ Already Enabled', `Push notifications are active. You are subscribed as <strong>${tag}</strong>.`, 'success');
+      return;
+    }
+    await OneSignal.Notifications.requestPermission();
+    if (OneSignal.Notifications.permission) {
+      await OneSignal.User.addTag("user_role", tag);
+      showModal('🔔 Notifications Enabled!', `You will now receive push notifications as <strong>${tag}</strong>.`, 'success');
+    } else {
+      showModal('Blocked', 'Notifications are blocked. Go to browser Site Settings → Notifications → Allow for this site, then try again.', 'error');
+    }
+  } catch(e) {
+    showModal('Error', 'Could not enable notifications: ' + e.message, 'error');
+  }
+}
+
 // ── ONESIGNAL: Register this device as the Guidance Counselor ──
 // Called automatically after a successful guidance login.
 // Tags this device with user_role=guidance so push alerts are
@@ -1493,6 +1514,37 @@ function unregisterAsCounselor() {
       console.warn("[QHsafety] Could not remove counselor push tag:", e);
     }
   });
+}
+
+// ── ONESIGNAL: Broadcast announcement to all students ──
+async function sendAnnouncementPush(title, message) {
+  try {
+    const response = await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, message, url: window.location.origin, target: 'student' })
+    });
+    return await response.json();
+  } catch(e) {
+    console.error("Announcement push error:", e);
+  }
+}
+
+let announcementTitle = '', announcementMessage = '';
+
+async function handleSendAnnouncement() {
+  if (!announcementTitle.trim() || !announcementMessage.trim()) {
+    showModal('Missing Fields', 'Please enter both a title and message.', 'error');
+    return;
+  }
+  const result = await sendAnnouncementPush(announcementTitle, announcementMessage);
+  if (result && !result.errors) {
+    announcementTitle = ''; announcementMessage = '';
+    showModal('📢 Announcement Sent!', `Delivered to <strong>${result.recipients || 0}</strong> student device(s).`, 'success');
+    render();
+  } else {
+    showModal('Failed', 'Could not send announcement: ' + JSON.stringify(result?.errors), 'error');
+  }
 }
 
 /** * 🚨 THE MESSENGER FUNCTION 
@@ -1851,12 +1903,16 @@ async function deleteConsultation(id) {
       <div class="p-5 pb-2"><span class="mono font-bold" style="font-size:${fs*1.2}px;color:${config.primary_action_color}">QHsafety</span><div class="mt-1 text-xs font-medium" style="color:#ffffff66">${currentRole==='admin'?'Admin Panel':currentRole==='student'?'Student Portal':'Guidance Office'}</div></div>
       <nav class="mt-4 flex-1">${items.map((item,i)=>`<button onclick="activeSidebarItem='${item}';localStorage.setItem('qh_last_page','${item}');render()" class="sidebar-item w-full text-left flex items-center gap-3 px-5 py-3 text-sm ${activeSidebarItem===item?'active':''}" style="color:${activeSidebarItem===item?config.primary_action_color:'#ffffffaa'};border-left:3px solid ${activeSidebarItem===item?config.primary_action_color:'transparent'}"><i data-lucide="${icons[i]}" style="width:18px;height:18px"></i>${tr(itemKeys[i])}</button>`).join('')}</nav>
       <button onclick="logout()" class="flex items-center gap-2 px-5 py-4 text-sm" style="color:#ffffff66;border-top:1px solid #ffffff11;background:none;border-left:none;border-right:none;cursor:pointer;width:100%"><i data-lucide="log-out" style="width:16px;height:16px"></i>${tr('logout')}</button>
+      <button onclick="enablePushNotifications()" style="margin:8px 12px 12px;padding:10px;border-radius:10px;background:#ffee58;color:#2c3e50;border:none;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 24px)"><i data-lucide="bell" style="width:15px;height:15px"></i>Enable Notifications</button>
     </aside>
     <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0">
       <div class="mobile-topbar">
         <button onclick="mobileDrawerOpen=true;render()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;display:flex;align-items:center"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
         <span class="font-bold" style="color:#ffee58;font-size:${fs*1.1}px">QHsafety</span>
-        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style="background:${isAnonymous?'#90a4ae':'#ffee58'};color:#2c3e50">${isAnonymous?'?':(currentUserEmail||'?')[0].toUpperCase()}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button onclick="enablePushNotifications()" id="push-btn" style="background:#ffee58;color:#2c3e50;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px"><i data-lucide="bell" style="width:13px;height:13px"></i>Notify</button>
+          <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style="background:${isAnonymous?'#90a4ae':'#ffee58'};color:#2c3e50">${isAnonymous?'?':(currentUserEmail||'?')[0].toUpperCase()}</div>
+        </div>
       </div>
       <main class="flex-1 overflow-y-auto p-4 md:p-8 mobile-main" style="background-color:${config.background_color}">
         <div class="hidden md:block mb-8">
@@ -2371,7 +2427,28 @@ if(activeSidebarItem==='Postings') {
 <div class="p-6 rounded-xl" style="background:${config.surface_color}">
   <h3 class="font-bold mb-1" style="color:${config.text_color}">${tr('welcomeMsg')}</h3>
   <p style="color:${config.text_color}88;font-size:14px">${currentRole==='student'?tr('dashHint_student'):isGuidance?tr('dashHint_guidance'):tr('dashHint_admin')}</p>
-</div>`;
+</div>
+${isGuidance?`
+<div class="p-6 rounded-xl mt-6" style="background:${config.surface_color};border:1px solid #90caf933">
+  <div class="flex items-center gap-3 mb-4">
+    <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:#90caf922">
+      <i data-lucide="megaphone" style="width:18px;height:18px;color:#90caf9"></i>
+    </div>
+    <div>
+      <h3 class="font-bold" style="color:${config.text_color}">📢 Send Announcement to Students</h3>
+      <p class="text-xs" style="color:${config.text_color}66">Push notification delivered to all subscribed students</p>
+    </div>
+  </div>
+  <input type="text" placeholder="Announcement title..." value="${announcementTitle}"
+    oninput="announcementTitle=this.value"
+    style="width:100%;padding:10px 14px;margin-bottom:10px;border:1px solid ${config.text_color}22;border-radius:8px;background:${config.background_color};color:${config.text_color};font-size:14px" />
+  <textarea placeholder="Write your message to all students..." oninput="announcementMessage=this.value"
+    style="width:100%;padding:10px 14px;margin-bottom:12px;border:1px solid ${config.text_color}22;border-radius:8px;background:${config.background_color};color:${config.text_color};font-size:14px;min-height:80px;resize:vertical">${announcementMessage}</textarea>
+  <button onclick="handleSendAnnouncement()"
+    style="padding:10px 20px;background:#90caf9;color:#1a237e;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px">
+    <i data-lucide="send" style="width:16px;height:16px"></i> Send to All Students
+  </button>
+</div>`:''}`;
     }
 
     // ── DEEP LINK HANDLER ──
