@@ -1413,8 +1413,9 @@ if (risk.level === 'High' || risk.level === 'Medium') {
   
   if (typeof sendOneSignalPush === 'function') {
     await sendOneSignalPush(
-      `🚨 ${risk.level.toUpperCase()} RISK POST`, 
-      `Urgent content in: ${cleanTitle}`
+      `🚨 ${risk.level.toUpperCase()} RISK POST — AI Score: ${risk.score}`,
+      `${authorLabel}: "${cleanTitle}" — ${(risk.reasons||[]).slice(0,2).join(', ')}`,
+      newPosting.id, 'posting', risk.level, risk.score, risk.reasons
     );
   }
   addLog(`🚨 ${risk.level}-risk posting alert sent`, authorLabel, 'warning');
@@ -1493,12 +1494,16 @@ function unregisterAsCounselor() {
  * Delivered via OneSignal → OS push service (FCM/APNs), so it arrives
  * even when the counselor's browser/tab is closed or device is locked.
  */
-async function sendOneSignalPush(title, message) {
+async function sendOneSignalPush(title, message, postId, postType, riskLevel, riskScore, reasons) {
   try {
+    // Build deep-link URL so counselor lands directly on the post
+    const deepUrl = postId
+      ? `${window.location.origin}?deeplink=${postType || 'posting'}&id=${postId}&risk=${riskLevel || 'High'}&score=${riskScore || 0}`
+      : window.location.href;
     const response = await fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, message })
+      body: JSON.stringify({ title, message, url: deepUrl, reasons: reasons || [] })
     });
     return await response.json();
   } catch (e) {
@@ -1533,8 +1538,9 @@ if (risk.level === 'High' || risk.level === 'Medium') {
   
   if (typeof sendOneSignalPush === 'function') {
     await sendOneSignalPush(
-      `🚨 ${risk.level.toUpperCase()} RISK CONSULTATION`, 
-      `Problem detected: ${cleanReason}`
+      `🚨 ${risk.level.toUpperCase()} RISK CONSULTATION — AI Score: ${risk.score}`,
+      `${authorLabel}: "${cleanReason}" — ${(risk.reasons||[]).slice(0,2).join(', ')}`,
+      newConsult.id, 'consultation', risk.level, risk.score, risk.reasons
     );
   }
   addLog(`🚨 ${risk.level}-risk consultation alert sent`, authorLabel, 'warning');
@@ -2362,6 +2368,54 @@ if(activeSidebarItem==='Postings') {
 </div>`;
     }
 
+    // ── DEEP LINK HANDLER ──
+    // When counselor taps a OneSignal push notification, the URL contains
+    // ?deeplink=posting&id=123&risk=High&score=18
+    // This handler waits for auth + data to load, then auto-navigates.
+    function handleDeepLink() {
+      const params = new URLSearchParams(window.location.search);
+      const type  = params.get('deeplink');   // 'posting' or 'consultation'
+      const id    = params.get('id');
+      const risk  = params.get('risk');
+      const score = params.get('score');
+      if (!type || !id) return;
+
+      // Poll until data is loaded and user is authenticated as guidance
+      let attempts = 0;
+      const check = setInterval(() => {
+        attempts++;
+        if (attempts > 30) { clearInterval(check); return; } // timeout after 15s
+
+        const isReady = isAuthenticated && currentRole === 'guidance' &&
+          (type === 'posting' ? postings.length > 0 : consultationPostings.length > 0);
+        if (!isReady) return;
+        clearInterval(check);
+
+        // Navigate to the correct section
+        if (type === 'posting') {
+          activeSidebarItem = 'Postings';
+          expandedPost = Number(id);
+        } else if (type === 'consultation') {
+          activeSidebarItem = 'Consultations';
+          expandedConsult = Number(id);
+        }
+        render();
+
+        // Show a banner about why they're here
+        setTimeout(() => {
+          showModal(
+            `🚨 ${risk || 'High'} Risk Alert`,
+            `AI Score: <strong>${score || '?'}</strong><br>A student submission was flagged and needs your attention. You have been brought directly to the item below.`,
+            'error'
+          );
+        }, 400);
+
+        // Clean up URL so refresh doesn't re-trigger
+        window.history.replaceState({}, '', window.location.pathname);
+      }, 500);
+    }
+
+    handleDeepLink();
     render();
   </script>
 </body>
