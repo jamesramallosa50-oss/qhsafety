@@ -1030,7 +1030,10 @@ async function handleLogin(selectedRole) {
     currentUserEmail = email;
     currentRole = selectedRole;
     isAuthenticated = true;
-    activeSidebarItem = 'Dashboard';
+    // Restore last page or default to Dashboard
+    activeSidebarItem = localStorage.getItem('qh_last_page') || 'Dashboard';
+    // Save session for auto-login
+    localStorage.setItem('qh_saved_role', selectedRole);
 
     // Auto-register this device for push alerts when logging in as guidance
     if (selectedRole === 'guidance') {
@@ -1338,6 +1341,8 @@ function logout() {
   if (currentRole === 'guidance') {
     unregisterAsCounselor();
   }
+  localStorage.removeItem('qh_saved_role');
+  localStorage.removeItem('qh_last_page');
   firestoreUnsubscribes.forEach(u => u());
   firestoreUnsubscribes = [];
   const wasAnonymous = isAnonymous;
@@ -1838,13 +1843,13 @@ async function deleteConsultation(id) {
       <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm" style="background:${isAnonymous?'#90a4ae':'#ffee58'};color:#2c3e50">${isAnonymous?'?':(currentUserEmail||'?')[0].toUpperCase()}</div>
       <div><div class="text-xs font-semibold" style="color:#fff">${isAnonymous?'Anonymous User':currentUserEmail}</div><div class="text-xs" style="color:#ffffff66">${currentRole==='admin'?'Administrator':currentRole==='student'?'Student':'Counselor'}${isAnonymous?' · Anonymous':''}</div></div>
     </div>
-    <nav class="mt-4 flex-1 overflow-auto">${items.map((item,i)=>`<button onclick="activeSidebarItem='${item}';mobileDrawerOpen=false;render()" class="sidebar-item w-full text-left flex items-center gap-3 px-5 py-3 text-sm" style="color:${activeSidebarItem===item?'#ffee58':'#ffffffaa'};border-left:3px solid ${activeSidebarItem===item?'#ffee58':'transparent'};background:${activeSidebarItem===item?'rgba(255,238,88,0.1)':'none'}"><i data-lucide="${icons[i]}" style="width:18px;height:18px"></i>${tr(itemKeys[i])}</button>`).join('')}</nav>
+    <nav class="mt-4 flex-1 overflow-auto">${items.map((item,i)=>`<button onclick="activeSidebarItem='${item}';localStorage.setItem('qh_last_page','${item}');mobileDrawerOpen=false;render()" class="sidebar-item w-full text-left flex items-center gap-3 px-5 py-3 text-sm" style="color:${activeSidebarItem===item?'#ffee58':'#ffffffaa'};border-left:3px solid ${activeSidebarItem===item?'#ffee58':'transparent'};background:${activeSidebarItem===item?'rgba(255,238,88,0.1)':'none'}"><i data-lucide="${icons[i]}" style="width:18px;height:18px"></i>${tr(itemKeys[i])}</button>`).join('')}</nav>
     <button onclick="logout()" class="flex items-center gap-2 px-5 py-4 text-sm w-full" style="background:none;border:none;cursor:pointer;color:#ffffff66;border-top:1px solid #ffffff11"><i data-lucide="log-out" style="width:16px;height:16px"></i>${tr('logout')}</button>
   </div>
   <div class="flex fade-in" style="flex:1;overflow:hidden;background-color:${config.background_color}">
     <aside class="hidden md:flex flex-col w-60 shrink-0 h-full overflow-auto" style="background:#2c3e50">
       <div class="p-5 pb-2"><span class="mono font-bold" style="font-size:${fs*1.2}px;color:${config.primary_action_color}">QHsafety</span><div class="mt-1 text-xs font-medium" style="color:#ffffff66">${currentRole==='admin'?'Admin Panel':currentRole==='student'?'Student Portal':'Guidance Office'}</div></div>
-      <nav class="mt-4 flex-1">${items.map((item,i)=>`<button onclick="activeSidebarItem='${item}';render()" class="sidebar-item w-full text-left flex items-center gap-3 px-5 py-3 text-sm ${activeSidebarItem===item?'active':''}" style="color:${activeSidebarItem===item?config.primary_action_color:'#ffffffaa'};border-left:3px solid ${activeSidebarItem===item?config.primary_action_color:'transparent'}"><i data-lucide="${icons[i]}" style="width:18px;height:18px"></i>${tr(itemKeys[i])}</button>`).join('')}</nav>
+      <nav class="mt-4 flex-1">${items.map((item,i)=>`<button onclick="activeSidebarItem='${item}';localStorage.setItem('qh_last_page','${item}');render()" class="sidebar-item w-full text-left flex items-center gap-3 px-5 py-3 text-sm ${activeSidebarItem===item?'active':''}" style="color:${activeSidebarItem===item?config.primary_action_color:'#ffffffaa'};border-left:3px solid ${activeSidebarItem===item?config.primary_action_color:'transparent'}"><i data-lucide="${icons[i]}" style="width:18px;height:18px"></i>${tr(itemKeys[i])}</button>`).join('')}</nav>
       <button onclick="logout()" class="flex items-center gap-2 px-5 py-4 text-sm" style="color:#ffffff66;border-top:1px solid #ffffff11;background:none;border-left:none;border-right:none;cursor:pointer;width:100%"><i data-lucide="log-out" style="width:16px;height:16px"></i>${tr('logout')}</button>
     </aside>
     <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0">
@@ -1866,7 +1871,7 @@ async function deleteConsultation(id) {
       </main>
     </div>
   </div>
-  <nav class="mobile-bottom-nav">${bottomItems.map((item,i)=>`<button class="${activeSidebarItem===item?'active':''}" onclick="activeSidebarItem='${item}';render()"><i data-lucide="${bottomIcons[i]}"></i><span>${tr(bottomKeys[i])}</span></button>`).join('')}</nav>
+  <nav class="mobile-bottom-nav">${bottomItems.map((item,i)=>`<button class="${activeSidebarItem===item?'active':''}" onclick="activeSidebarItem='${item}';localStorage.setItem('qh_last_page','${item}');render()"><i data-lucide="${bottomIcons[i]}"></i><span>${tr(bottomKeys[i])}</span></button>`).join('')}</nav>
 </div>`;
     }
 
@@ -2427,6 +2432,35 @@ if(activeSidebarItem==='Postings') {
     }
 
     handleDeepLink();
+
+    // ── AUTO-LOGIN via Firebase session ──
+    auth.onAuthStateChanged(async (user) => {
+      if (user && !isAuthenticated) {
+        const savedRole = localStorage.getItem('qh_saved_role');
+        if (!savedRole) { render(); return; }
+
+        const email = user.email.toLowerCase();
+        const adminEmails = ['admin@qhsafety.demo', 'youradminemail@gmail.com'];
+        let actualRole = 'student';
+        if (adminEmails.includes(email)) actualRole = 'admin';
+        else if (email.includes('guidance') || email.includes('counselor')) actualRole = 'guidance';
+
+        if (savedRole !== actualRole) { render(); return; }
+
+        currentUserEmail = email;
+        currentRole = savedRole;
+        isAuthenticated = true;
+        activeSidebarItem = localStorage.getItem('qh_last_page') || 'Dashboard';
+
+        if (savedRole === 'guidance') registerAsCounselor();
+        loadDataFromFirestore();
+        setTimeout(handleDeepLink, 1000);
+        render();
+      } else if (!user) {
+        render();
+      }
+    });
+
     render();
   </script>
 </body>
