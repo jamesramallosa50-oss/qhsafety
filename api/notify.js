@@ -10,12 +10,18 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'title and message are required' });
   }
 
+  const apiKey = process.env.ONESIGNAL_API_KEY;
+  if (!apiKey) {
+    console.error('[notify] ONESIGNAL_API_KEY environment variable is not set');
+    return res.status(500).json({ error: 'Server misconfiguration' });
+  }
+
   try {
     const response = await fetch("https://api.onesignal.com/notifications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": "Key os_v2_app_jov65obr6rgpvcum2xaqsjrnpcnmfrtdslgui3nrrx6e2zn6n7fwgjd45gg2zrqvrifsbopcwccthfolklw7gonfzc54lx2ek7ykf4a"
+        "Authorization": `Key ${apiKey}`
       },
       body: JSON.stringify({
         app_id: "4babeeb8-31f4-4cfa-8a8c-d5c109262d78",
