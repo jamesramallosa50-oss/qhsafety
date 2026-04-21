@@ -1558,11 +1558,16 @@ async function sendOneSignalPush(title, message, postId, postType, riskLevel, ri
     const deepUrl = postId
       ? `${window.location.origin}?deeplink=${postType || 'posting'}&id=${postId}&risk=${riskLevel || 'High'}&score=${riskScore || 0}`
       : window.location.href;
-    const response = await fetch("/api/notify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, message, url: deepUrl, reasons: reasons || [] })
-    });
+   const response = await fetch("/api/notify", { ... });
+if (!response.ok) {
+  const text = await response.text();
+  console.error("OneSignal HTTP Error:", response.status, text);
+  return;
+}
+return await response.json();
+} catch (e) {
+  console.error("OneSignal Error:", e);
+  }
     return await response.json();
   } catch (e) {
     console.error("OneSignal Error:", e);
