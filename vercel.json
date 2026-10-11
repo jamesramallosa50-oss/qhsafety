@@ -1,11 +1,3 @@
 {
-  "cleanUrls": true,
-  "functions": {
-    "notify.js": { "runtime": "edge" }
-  },
-  "rewrites": [
-    { "source": "/api/notify", "destination": "/notify.js" },
-    { "source": "/OneSignalSDKWorker.js", "destination": "/public/OneSignalSDKWorker.js" },
-    { "source": "/OneSignalSDKUpdaterWorker.js", "destination": "/public/OneSignalSDKUpdaterWorker.js" }
-  ]
+  "cleanUrls": true
 }

@@ -8,10 +8,165 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // Low-end device detection → "lite" mode (no animations/transitions/shadows)
+    (function(){
+      try{
+        var n=navigator,lite=false;
+        if(n.hardwareConcurrency&&n.hardwareConcurrency<=4)lite=true;
+        if(n.deviceMemory&&n.deviceMemory<=4)lite=true;
+        if(n.connection&&(n.connection.saveData||/2g/.test(n.connection.effectiveType||'')))lite=true;
+        if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)lite=true;
+        var pref=localStorage.getItem('qh_lite');
+        if(pref==='1')lite=true; else if(pref==='0')lite=false;
+        if(lite)document.documentElement.classList.add('lite');
+      }catch(e){}
+    })();
+  </script>
+  <style id="qh-utilities">
+@layer base,utilities;
+@layer base{
+*,::after,::before,::backdrop,::file-selector-button{box-sizing:border-box;margin:0;padding:0;border:0 solid}
+html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,'Apple Color Emoji','Segoe UI Emoji';-webkit-tap-highlight-color:transparent}
+body{line-height:inherit}
+h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}
+a{color:inherit;-webkit-text-decoration:inherit;text-decoration:inherit}
+b,strong{font-weight:bolder}
+small{font-size:80%}
+table{text-indent:0;border-color:inherit;border-collapse:collapse}
+ol,ul,menu{list-style:none}
+img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}
+img,video{max-width:100%;height:auto}
+button,input,select,optgroup,textarea,::file-selector-button{font:inherit;font-feature-settings:inherit;font-variation-settings:inherit;letter-spacing:inherit;color:inherit;border-radius:0;background-color:transparent;opacity:1}
+textarea{resize:vertical}
+::placeholder{opacity:1;color:color-mix(in oklab,currentcolor 50%,transparent)}
+button,[type=button],[type=reset],[type=submit]{-webkit-appearance:button;appearance:button}
+[hidden]:where(:not([hidden=until-found])){display:none!important}
+}
+
+@layer utilities{
+.absolute{position:absolute}
+.fixed{position:fixed}
+.relative{position:relative}
+.flex{display:flex}
+.grid{display:grid}
+.hidden{display:none}
+.inline-block{display:inline-block}
+.flex-1{flex:1}
+.flex-col{flex-direction:column}
+.flex-wrap{flex-wrap:wrap}
+.shrink-0{flex-shrink:0}
+.items-center{align-items:center}
+.items-start{align-items:flex-start}
+.justify-between{justify-content:space-between}
+.justify-center{justify-content:center}
+.font-medium{font-weight:500}
+.font-semibold{font-weight:600}
+.font-bold{font-weight:700}
+.gap-1{gap:0.25rem}
+.gap-2{gap:0.5rem}
+.gap-3{gap:0.75rem}
+.gap-4{gap:1rem}
+.gap-6{gap:1.5rem}
+.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}
+.h-2{height:0.5rem}
+.h-6{height:1.5rem}
+.h-7{height:1.75rem}
+.h-8{height:2rem}
+.h-9{height:2.25rem}
+.h-10{height:2.5rem}
+.w-2{width:0.5rem}
+.w-6{width:1.5rem}
+.w-8{width:2rem}
+.w-9{width:2.25rem}
+.w-10{width:2.5rem}
+.w-14{width:3.5rem}
+.w-60{width:15rem}
+.w-96{width:24rem}
+.h-full{height:100%}
+.w-full{width:100%}
+.inset-0{inset:0}
+.left-6{left:1.5rem}
+.top-6{top:1.5rem}
+.z-50{z-index:50}
+.leading-tight{line-height:1.25}
+.tracking-widest{letter-spacing:.1em}
+.uppercase{text-transform:uppercase}
+.text-xs{font-size:.75rem;line-height:1.3333}
+.text-sm{font-size:.875rem;line-height:1.4286}
+.text-lg{font-size:1.125rem;line-height:1.5556}
+.text-2xl{font-size:1.5rem;line-height:1.3333}
+.text-3xl{font-size:1.875rem;line-height:1.2}
+.text-center{text-align:center}
+.text-left{text-align:left}
+.text-red-500{color:#fb2c36}
+.max-w-sm{max-width:24rem}
+.max-w-lg{max-width:32rem}
+.max-w-xl{max-width:36rem}
+.max-w-2xl{max-width:42rem}
+.max-w-3xl{max-width:48rem}
+.max-w-4xl{max-width:56rem}
+.min-w-0{min-width:0}
+.mb-1{margin-bottom:0.25rem}
+.mb-2{margin-bottom:0.5rem}
+.mb-3{margin-bottom:0.75rem}
+.mb-4{margin-bottom:1rem}
+.mb-5{margin-bottom:1.25rem}
+.mb-6{margin-bottom:1.5rem}
+.mb-8{margin-bottom:2rem}
+.mb-12{margin-bottom:3rem}
+.mt-1{margin-top:0.25rem}
+.mt-2{margin-top:0.5rem}
+.mt-3{margin-top:0.75rem}
+.mt-4{margin-top:1rem}
+.mt-6{margin-top:1.5rem}
+.mx-3{margin-left:0.75rem;margin-right:0.75rem}
+.mx-auto{margin-left:auto;margin-right:auto}
+.overflow-auto{overflow:auto}
+.overflow-y-auto{overflow-y:auto}
+.p-2{padding:0.5rem}
+.p-3{padding:0.75rem}
+.p-4{padding:1rem}
+.p-5{padding:1.25rem}
+.p-6{padding:1.5rem}
+.p-8{padding:2rem}
+.pb-2{padding-bottom:0.5rem}
+.pb-16{padding-bottom:4rem}
+.pt-2{padding-top:0.5rem}
+.pt-3{padding-top:0.75rem}
+.px-2{padding-left:0.5rem;padding-right:0.5rem}
+.px-3{padding-left:0.75rem;padding-right:0.75rem}
+.px-4{padding-left:1rem;padding-right:1rem}
+.px-5{padding-left:1.25rem;padding-right:1.25rem}
+.px-6{padding-left:1.5rem;padding-right:1.5rem}
+.px-8{padding-left:2rem;padding-right:2rem}
+.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}
+.py-1{padding-top:0.25rem;padding-bottom:0.25rem}
+.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}
+.py-2{padding-top:0.5rem;padding-bottom:0.5rem}
+.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}
+.py-3{padding-top:0.75rem;padding-bottom:0.75rem}
+.py-4{padding-top:1rem;padding-bottom:1rem}
+.py-20{padding-top:5rem;padding-bottom:5rem}
+.rounded{border-radius:.25rem}
+.rounded-md{border-radius:.375rem}
+.rounded-lg{border-radius:.5rem}
+.rounded-xl{border-radius:.75rem}
+.rounded-full{border-radius:9999px}
+.border-t{border-top-width:1px}
+.bg-black{background-color:#000}
+.bg-opacity-50{background-color:rgba(0,0,0,.5)}
+.space-y-2>:not(:last-child){margin-bottom:.5rem}.space-y-4>:not(:last-child){margin-bottom:1rem}
+.hover\:opacity-80:hover{opacity:.8}
+@media (min-width:640px){.sm\:flex-row{flex-direction:row}}
+@media (min-width:768px){.md\:block{display:block}.md\:flex{display:flex}.md\:hidden{display:none}.md\:flex-row{flex-direction:row}.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.md\:p-8{padding:2rem}}
+}
+  </style>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -24,36 +179,19 @@
   });
 </script>
   <style>
-      .guidance-high-risk {
-      box-shadow: 0 0 20px rgba(239,83,80,0.9), 0 0 0 2px #ef5350;
-      border: 2px solid #ef5350 !important;
-      animation: pulseRed 1.5s ease-in-out infinite;
+    .guidance-high-risk, .guidance-high-priority, .guidance-medium-risk, .guidance-critical { position:relative; }
+    .guidance-high-risk   { box-shadow:0 0 0 2px #ef5350, 0 0 14px rgba(239,83,80,.6); border:2px solid #ef5350 !important; }
+    .guidance-high-priority { box-shadow:0 0 0 2px #ef5350, 0 0 12px rgba(239,83,80,.55); border:2px solid #ef5350 !important; }
+    .guidance-medium-risk { box-shadow:0 0 0 2px #ff9800, 0 0 10px rgba(255,152,0,.5); border:2px solid #ff9800 !important; }
+    .guidance-critical    { box-shadow:0 0 0 3px #ef5350, 0 0 20px rgba(239,83,80,.8); border:3px solid #ef5350 !important; }
+    /* Pulse animates only opacity of a pseudo-element (GPU-friendly) instead of box-shadow on every frame */
+    .guidance-high-risk::after, .guidance-high-priority::after, .guidance-critical::after, .guidance-medium-risk::after {
+      content:''; position:absolute; inset:-2px; border-radius:inherit; pointer-events:none;
+      box-shadow:0 0 26px rgba(239,83,80,1); opacity:0; animation:glowPulse 1.8s ease-in-out infinite; will-change:opacity;
     }
-    .guidance-high-priority {
-      box-shadow: 0 0 18px rgba(239,83,80,0.8), 0 0 0 2px #ef5350;
-      border: 2px solid #ef5350 !important;
-      animation: pulseRed 1.8s ease-in-out infinite;
-    }
-    .guidance-medium-risk {
-      box-shadow: 0 0 14px rgba(255,152,0,0.7), 0 0 0 2px #ff9800;
-      border: 2px solid #ff9800 !important;
-      animation: pulseOrange 2s ease-in-out infinite;
-    }
-    .guidance-critical {
-      box-shadow: 0 0 28px rgba(239,83,80,1), 0 0 0 3px #ef5350;
-      border: 3px solid #ef5350 !important;
-      animation: pulseRed 0.9s ease-in-out infinite;
-    }
-    @keyframes pulseRed {
-      0%   { box-shadow: 0 0 8px rgba(239,83,80,0.4), 0 0 0 2px #ef5350; }
-      50%  { box-shadow: 0 0 28px rgba(239,83,80,1),  0 0 0 2px #ef5350; }
-      100% { box-shadow: 0 0 8px rgba(239,83,80,0.4), 0 0 0 2px #ef5350; }
-    }
-    @keyframes pulseOrange {
-      0%   { box-shadow: 0 0 6px rgba(255,152,0,0.4), 0 0 0 2px #ff9800; }
-      50%  { box-shadow: 0 0 20px rgba(255,152,0,0.9), 0 0 0 2px #ff9800; }
-      100% { box-shadow: 0 0 6px rgba(255,152,0,0.4), 0 0 0 2px #ff9800; }
-    }
+    .guidance-medium-risk::after { box-shadow:0 0 20px rgba(255,152,0,.95); animation-duration:2.2s; }
+    .guidance-critical::after { animation-duration:1s; }
+    @keyframes glowPulse { 0%,100%{opacity:0} 50%{opacity:1} }
     html, body { margin:0; padding:0; height:100%; width:100%; font-family:'DM Sans',sans-serif; box-sizing:border-box; }
     #app { height:100%; width:100%; }
     * { box-sizing:border-box; }
@@ -64,11 +202,12 @@
     }
     .highlight-yellow { background:linear-gradient(180deg,transparent 55%,#fff176 55%); }
     .highlight-cyan   { background:linear-gradient(180deg,transparent 55%,#80deea 55%); }
-    .sidebar-item { transition:all 0.2s; }
+    .sidebar-item { transition:background-color 0.2s,color 0.2s; }
     .sidebar-item:hover, .sidebar-item.active { background:rgba(255,238,88,0.15); color:#ffee58; border-left:3px solid #ffee58; }
     .card-hover { transition:transform 0.2s,box-shadow 0.2s; }
     .card-hover:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.1); }
     .fade-in { animation:fadeIn 0.4s ease; }
+    .rendered .fade-in { animation:none; } /* only play entrance once, not on every re-render */
     @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
     .mobile-bottom-nav {
       position:fixed; bottom:0; left:0; right:0; height:64px; background:#2c3e50;
@@ -129,12 +268,21 @@
 }
 
 button {
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
 }
 
 button:active {
   transform: scale(0.97);
 }
+/* ── LITE MODE (low-end devices): no animations, transitions or heavy shadows ── */
+html.lite *, html.lite *::before, html.lite *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+html.lite .card-hover:hover { transform:none; box-shadow:none; }
+html.lite .guidance-high-risk::after, html.lite .guidance-high-priority::after,
+html.lite .guidance-medium-risk::after, html.lite .guidance-critical::after { display:none; }
+html.lite #qh-modal-box { box-shadow:none; border:1px solid #ddd; }
+html.lite .mobile-bottom-nav, html.lite .mobile-topbar { box-shadow:none; }
+html.lite .grid-bg { background-image:none; }
+@media (prefers-reduced-motion: reduce) { .guidance-high-risk::after, .guidance-high-priority::after, .guidance-medium-risk::after, .guidance-critical::after { display:none; } }
   </style>
 </head>
 <body class="h-full w-full overflow-auto">
@@ -341,29 +489,6 @@ button:active {
     };
     function tr(key) { return (T[appLang]||T.en)[key] || T.en[key] || key; }
 
-    // This is the "Brain" of your app
-async function handleStudentReport(reportText) {
-    
-    // 1. Check for problems (The "Judge")
-    const isHighRisk = checkRiskLevel(reportText); 
-
-    if (isHighRisk === true) {
-        // 2. ONLY IF there is a problem, the notification starts!
-        console.log("Problem detected! Notifying Guidance...");
-        
-        const title = "🚨 Urgent: High Risk Report";
-        const message = "A student just submitted a high-risk report. Check the dashboard.";
-        
-        // This is where your OneSignal function is called
-        await sendOneSignalPush(title, message);
-    } else {
-        // No notification if everything is okay
-        console.log("Report received. No high risk detected.");
-    }
-}
-  
-  
-  
     // ── ADVANCED AI RISK DETECTION (Claude API + Regex fallback) ──
 
 // Claude API-powered risk analysis — returns same shape as detectRisk
@@ -374,11 +499,11 @@ async function detectRiskAI(text) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: text.slice(0, 1800) })
     });
-    const data = await response.json();
-    const raw = (data.content || []).map(i => i.text || '').join('').replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(raw);
+    if (!response.ok) throw new Error('analyze HTTP ' + response.status);
+    const parsed = await response.json();
     // Validate shape
     if (typeof parsed.score === 'number' && parsed.level && Array.isArray(parsed.reasons)) {
+      if (typeof parsed.flagged !== 'boolean') parsed.flagged = parsed.score >= 3 || parsed.level !== 'Low';
       return parsed;
     }
   } catch(e) {
@@ -999,7 +1124,7 @@ function containsSensitiveWords(text) {
       const id=Date.now();
       const log={id,action,user,type,time:new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',second:'2-digit'}),timestamp:id};
       try{await db.collection('logs').doc(String(id)).set(log);}
-      catch(e){systemLogs.unshift(log);render();}
+      catch(e){systemLogs.unshift(log);scheduleRender();}
     }
 
     // ── AUTH ──
@@ -1364,12 +1489,22 @@ function logout() {
     // ── FIRESTORE ──
     function loadDataFromFirestore() {
       firestoreUnsubscribes.forEach(u=>u());firestoreUnsubscribes=[];
-      firestoreUnsubscribes.push(
-        db.collection('postings').onSnapshot(s=>{postings=s.docs.map(d=>d.data()).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));render();}),
-        db.collection('consultations').onSnapshot(s=>{consultationPostings=s.docs.map(d=>d.data()).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));render();}),
-        db.collection('feedback').onSnapshot(s=>{feedbackList=s.docs.map(d=>d.data()).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));render();}),
-        db.collection('logs').onSnapshot(s=>{systemLogs=s.docs.map(d=>d.data()).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));render();})
+      const byTime=(x,y)=>(y.timestamp||0)-(x.timestamp||0);
+      const listen=(query,assign)=>firestoreUnsubscribes.push(
+        query.onSnapshot(snap=>{assign(snap.docs.map(d=>d.data()).sort(byTime));scheduleRender();},
+          err=>console.warn('[QHsafety] listener error:',err&&err.message))
       );
+      const isStaff=currentRole==='guidance'||currentRole==='admin';
+      // Students only download THEIR OWN postings/consultations (less data = faster + more private)
+      const mine=col=>db.collection(col).where('authorId','==',currentUserEmail).limit(100);
+      const recent=(col,n)=>db.collection(col).orderBy('timestamp','desc').limit(n);
+
+      listen(isStaff?recent('postings',200):mine('postings'),     d=>{postings=d;});
+      listen(isStaff?recent('consultations',200):mine('consultations'), d=>{consultationPostings=d;});
+      // Feedback + logs are only shown to staff / admin (students filter their own feedback)
+      listen(currentRole==='admin'?recent('feedback',100):
+             db.collection('feedback').where('author','==',currentUserEmail).limit(50), d=>{feedbackList=d;});
+      if(currentRole==='admin') listen(recent('logs',150), d=>{systemLogs=d;});
     }
 
     // ── POSTINGS ──
@@ -1547,33 +1682,31 @@ async function handleSendAnnouncement() {
   }
 }
 
-/** * 🚨 THE MESSENGER FUNCTION 
+/** 🚨 THE MESSENGER FUNCTION
  * Sends a push notification ONLY to devices tagged as guidance counselor.
- * Delivered via OneSignal → OS push service (FCM/APNs), so it arrives
- * even when the counselor's browser/tab is closed or device is locked.
  */
 async function sendOneSignalPush(title, message, postId, postType, riskLevel, riskScore, reasons) {
   try {
-    // Build deep-link URL so counselor lands directly on the post
+    // Deep-link URL so counselor lands directly on the post
     const deepUrl = postId
-      ? `${window.location.origin}?deeplink=${postType || 'posting'}&id=${postId}&risk=${riskLevel || 'High'}&score=${riskScore || 0}`
-      : window.location.href;
-   const response = await fetch("/api/notify", { ... });
-if (!response.ok) {
-  const text = await response.text();
-  console.error("OneSignal HTTP Error:", response.status, text);
-  return;
-}
-return await response.json();
-} catch (e) {
-  console.error("OneSignal Error:", e);
-  }
+      ? `${window.location.origin}/?deeplink=${postType || 'posting'}&id=${postId}&risk=${riskLevel || 'High'}&score=${riskScore || 0}`
+      : window.location.origin;
+    const response = await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, message, url: deepUrl, reasons: reasons || [], target: 'guidance' })
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("OneSignal HTTP Error:", response.status, text);
+      return;
+    }
     return await response.json();
   } catch (e) {
     console.error("OneSignal Error:", e);
   }
 }
-  
+
     // ── CONSULTATIONS ──
     async function addConsultation() {
       if(window._consultSubmitting)return;window._consultSubmitting=true;
@@ -1793,11 +1926,41 @@ async function deleteConsultation(id) {
   
   
     // ── RENDER ──
+    // ── PERFORMANCE HELPERS ──
+    function isLite(){ return document.documentElement.classList.contains('lite'); }
+    function toggleLiteMode(){
+      const on=!isLite();
+      document.documentElement.classList.toggle('lite',on);
+      try{localStorage.setItem('qh_lite',on?'1':'0');}catch(e){}
+      render();
+    }
+    // Coalesces many Firestore snapshot updates into ONE render, and never re-renders
+    // while the user is typing (keeps focus + avoids lag on slow devices).
+    let _renderTimer=null, _renderWaited=0;
+    function scheduleRender(){
+      if(_renderTimer) return;
+      _renderTimer=setTimeout(function tick(){
+        const a=document.activeElement;
+        const typing=a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&app.contains(a);
+        if(typing && _renderWaited<5000){ _renderWaited+=400; _renderTimer=setTimeout(tick,400); return; }
+        _renderTimer=null; _renderWaited=0; render();
+      },200);
+    }
+    // "Show more" paging so long lists don't render hundreds of cards at once
+    const PAGE_SIZE=15;
+    let listLimit={postings:PAGE_SIZE,consults:PAGE_SIZE,logs:30,feedback:PAGE_SIZE,problems:PAGE_SIZE};
+    function showMore(key){ listLimit[key]+= (key==='logs'?30:PAGE_SIZE); render(); }
+    function moreBtn(key,total){
+      if(total<=listLimit[key]) return '';
+      return `<button onclick="showMore('${key}')" class="w-full py-3 rounded-lg font-semibold text-sm mt-4" style="background:${config.text_color}11;color:${config.text_color}">Show more (${total-listLimit[key]} remaining)</button>`;
+    }
+
     function render() {
       config=darkMode?{...config,background_color:'#1a1a1a',surface_color:'#2d2d2d',text_color:'#f5f5f5'}:{...defaultConfig};
       if(!isAuthenticated){selectedRoleForLogin?renderGateway():renderLanding();}
       else{renderDashboard();}
       lucide.createIcons();
+      if(isAuthenticated && !document.documentElement.classList.contains('rendered')) setTimeout(()=>document.documentElement.classList.add('rendered'),700);
       // Auto-scroll chat boxes to bottom
       setTimeout(()=>{
         document.querySelectorAll('[id^="consultChatBox_"],[id^="postChatBox_"]').forEach(el=>{el.scrollTop=el.scrollHeight;});
@@ -2026,7 +2189,7 @@ if(activeSidebarItem==='Postings') {
            <i data-lucide="megaphone" style="width:32px;height:32px;color:${config.text_color}44"></i>
            <p class="mt-3 text-sm" style="color:${config.text_color}66">${tr('noPostings')}</p>
          </div>`
-      : filtered.map(p => {
+      : filtered.slice(0,listLimit.postings).map(p => {
           const isPending = true; // Postings are always "active"
           const gc = getGlowClass(p, isPending);
 
@@ -2110,7 +2273,7 @@ if(activeSidebarItem==='Postings') {
           </div>
         </div>
       </div>`;
-        }).join('')}
+        }).join('')}${moreBtn('postings',filtered.length)}
   </div>
 </div>`;
 }
@@ -2180,7 +2343,7 @@ if(activeSidebarItem==='Postings') {
   <div class="space-y-4">
     ${visibleConsultations.length===0
       ?`<div class="p-8 rounded-xl flex flex-col items-center" style="background:${config.surface_color};border:2px dashed ${config.text_color}22"><i data-lucide="calendar" style="width:32px;height:32px;color:${config.text_color}44"></i><p class="mt-3 text-sm" style="color:${config.text_color}66">${tr('noConsultations')}</p></div>`
-      :visibleConsultations.map(c=>{
+      :visibleConsultations.slice(0,listLimit.consults).map(c=>{
         const isPending=c.status==='Pending';
         const gc=getGlowClass(c,isPending);
         return `
@@ -2263,7 +2426,7 @@ if(activeSidebarItem==='Postings') {
             </div>` : `<p style="font-size:12px;color:${config.text_color}44;text-align:center">Chat closed — consultation resolved.</p>`}
           </div>
         </div>`;
-      }).join('')}
+      }).join('')}${moreBtn('consults',visibleConsultations.length)}
   </div>
 </div>`;
       }
@@ -2296,7 +2459,7 @@ if(activeSidebarItem==='Postings') {
   ${currentRole!=='admin'?`<div class="mb-8"><button onclick="showFeedbackForm=!showFeedbackForm;render()" class="px-6 py-3 rounded-lg font-semibold flex items-center gap-2" style="background:${config.primary_action_color};color:${config.text_color}"><i data-lucide="plus" style="width:20px;height:20px"></i> ${tr('leaveFeedback')}</button></div>`:''}
   ${showFeedbackForm?`<div class="p-6 rounded-xl mb-8 card-hover" style="background:${config.surface_color};border:1px solid ${config.text_color}11">${feedbackError?`<div class="p-3 rounded-lg mb-4 text-sm" style="background:#ef5350;color:#fff;text-align:center">${feedbackError}</div>`:''}<h3 class="font-bold mb-4" style="font-size:${fs*1.1}px;color:${config.text_color}">${tr('leaveFeedback')}</h3><div class="mb-4"><label style="display:block;font-size:14px;font-weight:600;color:${config.text_color};margin-bottom:8px">${tr('rating')}</label><div class="flex gap-2">${[1,2,3,4,5].map(n=>`<button onclick="feedbackRating=${n};render()" class="w-10 h-10 rounded-lg font-bold text-lg" style="background:${feedbackRating>=n?config.primary_action_color:config.text_color+'22'};color:${config.text_color}">${n}</button>`).join('')}</div></div><textarea placeholder="${tr('writeFeedback')}" oninput="feedbackMessage=this.value" style="width:100%;padding:12px;margin-bottom:16px;border:1px solid ${config.text_color}22;border-radius:8px;background:${config.background_color};color:${config.text_color};min-height:100px;resize:vertical">${feedbackMessage}</textarea><div class="flex gap-3"><button onclick="addFeedback()" class="px-6 py-3 rounded-lg font-semibold" style="background:${config.primary_action_color};color:${config.text_color}">${tr('submit')}</button><button onclick="showFeedbackForm=false;feedbackMessage='';feedbackRating=5;feedbackError='';render()" class="px-6 py-3 rounded-lg font-semibold" style="background:${config.text_color}22;color:${config.text_color}">${tr('cancel')}</button></div></div>`:''}
   <div class="space-y-4">
-    ${visibleFeedback.length===0?`<div class="p-8 rounded-xl flex flex-col items-center" style="background:${config.surface_color};border:2px dashed ${config.text_color}22"><i data-lucide="message-circle" style="width:32px;height:32px;color:${config.text_color}44"></i><p class="mt-3 text-sm" style="color:${config.text_color}66">${tr('noFeedback')}</p></div>`:visibleFeedback.map(f=>`<div class="p-6 rounded-xl card-hover" style="background:${config.surface_color}"><div class="flex justify-between items-start mb-2"><div><span class="text-xs font-bold" style="color:${config.text_color}88">${f.authorRole||'Student'}</span><div class="flex gap-1 mt-1">${[1,2,3,4,5].map(n=>`<span style="color:${f.rating>=n?'#ffee58':config.text_color+'33'};font-size:14px">★</span>`).join('')}</div></div><span class="text-xs" style="color:${config.text_color}55">${f.date||''}</span></div><p style="color:${config.text_color}88;margin-top:8px">${f.message}</p></div>`).join('')}
+    ${visibleFeedback.length===0?`<div class="p-8 rounded-xl flex flex-col items-center" style="background:${config.surface_color};border:2px dashed ${config.text_color}22"><i data-lucide="message-circle" style="width:32px;height:32px;color:${config.text_color}44"></i><p class="mt-3 text-sm" style="color:${config.text_color}66">${tr('noFeedback')}</p></div>`:visibleFeedback.slice(0,listLimit.feedback).map(f=>`<div class="p-6 rounded-xl card-hover" style="background:${config.surface_color}"><div class="flex justify-between items-start mb-2"><div><span class="text-xs font-bold" style="color:${config.text_color}88">${f.authorRole||'Student'}</span><div class="flex gap-1 mt-1">${[1,2,3,4,5].map(n=>`<span style="color:${f.rating>=n?'#ffee58':config.text_color+'33'};font-size:14px">★</span>`).join('')}</div></div><span class="text-xs" style="color:${config.text_color}55">${f.date||''}</span></div><p style="color:${config.text_color}88;margin-top:8px">${f.message}</p></div>`).join('')}${moreBtn('feedback',visibleFeedback.length)}
   </div>
 </div>`;
       }
@@ -2310,7 +2473,7 @@ if(activeSidebarItem==='Postings') {
     <h1 class="font-bold" style="font-size:${fs*1.6}px;color:${config.text_color}">System Logs</h1>
     <div class="flex gap-2">${['all','info','warning','error','success'].map(t=>`<button onclick="logFilter='${t}';render()" class="px-3 py-1.5 rounded-lg text-xs font-semibold" style="background:${logFilter===t?config.primary_action_color:config.text_color+'22'};color:${config.text_color}">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}</div>
   </div>
-  <div class="space-y-2">${filtered.length===0?`<div class="p-8 rounded-xl text-center" style="background:${config.surface_color}"><p style="color:${config.text_color}66">No logs found</p></div>`:filtered.map(l=>`<div class="p-4 rounded-xl flex items-start gap-3" style="background:${config.surface_color}"><div class="w-2 h-2 rounded-full mt-2 shrink-0" style="background:${l.type==='error'?'#ef5350':l.type==='warning'?'#ff9800':l.type==='success'?'#66bb6a':'#90caf9'}"></div><div class="flex-1 min-w-0"><p class="text-sm" style="color:${config.text_color}">${l.action}</p><p class="text-xs mt-1" style="color:${config.text_color}55">${l.user} · ${l.time}</p></div></div>`).join('')}</div>
+  <div class="space-y-2">${filtered.length===0?`<div class="p-8 rounded-xl text-center" style="background:${config.surface_color}"><p style="color:${config.text_color}66">No logs found</p></div>`:filtered.slice(0,listLimit.logs).map(l=>`<div class="p-4 rounded-xl flex items-start gap-3" style="background:${config.surface_color}"><div class="w-2 h-2 rounded-full mt-2 shrink-0" style="background:${l.type==='error'?'#ef5350':l.type==='warning'?'#ff9800':l.type==='success'?'#66bb6a':'#90caf9'}"></div><div class="flex-1 min-w-0"><p class="text-sm" style="color:${config.text_color}">${l.action}</p><p class="text-xs mt-1" style="color:${config.text_color}55">${l.user} · ${l.time}</p></div></div>`).join('')}${moreBtn('logs',filtered.length)}</div>
 </div>`;
       }
 
@@ -2326,6 +2489,15 @@ if(activeSidebarItem==='Postings') {
       </div>
       <button onclick="darkMode=!darkMode;render()" class="relative w-14 h-7 rounded-full" style="background:${darkMode?config.primary_action_color+'cc':config.text_color}33">
         <div class="absolute w-6 h-6 rounded-full" style="top:0.5px;${darkMode?'right:0.5px':'left:0.5px'};background:${config.text_color}"></div>
+      </button>
+    </div>
+    <div class="flex items-center justify-between p-4 rounded-lg mb-3" style="background:${config.text_color}08">
+      <div class="flex items-center gap-3">
+        <i data-lucide="zap" style="width:20px;height:20px;color:${config.text_color}"></i>
+        <div><span style="font-weight:600;color:${config.text_color}">Performance Mode</span><div class="text-xs" style="color:${config.text_color}88">Turns off animations — faster on older devices</div></div>
+      </div>
+      <button onclick="toggleLiteMode()" class="relative w-14 h-7 rounded-full" style="background:${isLite()?config.primary_action_color+'cc':config.text_color+'33'}">
+        <div class="absolute w-6 h-6 rounded-full" style="top:0.5px;${isLite()?'right:0.5px':'left:0.5px'};background:${config.text_color}"></div>
       </button>
     </div>
     <div class="p-4 rounded-lg" style="background:${config.text_color}08">
@@ -2383,7 +2555,7 @@ if(activeSidebarItem==='Postings') {
   ${problemConsultations.length>0?`
   <div class="mb-3 flex items-center gap-2"><i data-lucide="users" style="width:14px;height:14px;color:${config.text_color}55"></i><span class="text-xs font-bold uppercase tracking-widest" style="color:${config.text_color}55">${appLang==='tl'?'Mga Nakabinbing Konsultasyon':'Pending Consultations'}</span></div>
   <div class="space-y-4 mb-8">
-    ${problemConsultations.map(c=>{const gc=getGlowClass(c,true);return `
+    ${problemConsultations.slice(0,listLimit.problems).map(c=>{const gc=getGlowClass(c,true);return `
     <div class="p-6 rounded-xl card-hover ${gc}" style="background:${config.surface_color}">
       <div class="flex justify-between items-start mb-2">
         <div>
@@ -2398,12 +2570,12 @@ if(activeSidebarItem==='Postings') {
       </div>
       <p class="text-sm mb-2" style="color:${config.text_color}88">${c.description}</p>
       <p class="text-xs" style="color:${config.text_color}55">${appLang==='tl'?'Estudyante:':'Student:'} ${c.studentEmail||c.author} · ${c.date||''}</p>
-    </div>`;}).join('')}
+    </div>`;}).join('')}${moreBtn('problems',problemConsultations.length)}
   </div>`:''}
   ${problemPostings.length>0?`
   <div class="mb-3 flex items-center gap-2"><i data-lucide="megaphone" style="width:14px;height:14px;color:${config.text_color}55"></i><span class="text-xs font-bold uppercase tracking-widest" style="color:${config.text_color}55">${appLang==='tl'?'Mga Naka-flag na Post':'Flagged Postings'}</span></div>
   <div class="space-y-4">
-    ${problemPostings.map(p=>{const gc=getGlowClass(p,true);return `
+    ${problemPostings.slice(0,listLimit.problems).map(p=>{const gc=getGlowClass(p,true);return `
     <div class="p-6 rounded-xl card-hover ${gc}" style="background:${config.surface_color}">
       <div class="mb-2">
         <div class="mb-1"><span class="text-xs px-2 py-0.5 rounded font-bold" style="background:#ffee5822;color:#9a8000;border:1px solid #ffee5855">${appLang==='tl'?'Post':'Posting'}</span></div>
@@ -2416,7 +2588,7 @@ if(activeSidebarItem==='Postings') {
       </div>
       <p class="text-sm mb-2" style="color:${config.text_color}88">${p.content}</p>
       <p class="text-xs" style="color:${config.text_color}55">${appLang==='tl'?'Ni':'By'}: ${p.author} · ${p.timestamp?new Date(p.timestamp).toLocaleDateString():''}</p>
-    </div>`;}).join('')}
+    </div>`;}).join('')}${moreBtn('problems',problemPostings.length)}
   </div>`:''}
 </div>`;
       }
