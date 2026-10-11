@@ -3,7 +3,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { text } = req.body;
+  let body = req.body;
+  if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
+  const { text } = body || {};
   if (!text) {
     return res.status(400).json({ error: 'text is required' });
   }
@@ -145,11 +147,12 @@ Respond ONLY with a valid JSON object. No preamble, no markdown, no explanation.
     }
 
     const raw = data?.choices?.[0]?.message?.content || '';
-    const cleaned = raw.replace(/```json|```/g, '').trim();
+    const cleaned = (raw.replace(/```json|```/g, '').match(/\{[\s\S]*\}/) || [''])[0].trim();
     const parsed = JSON.parse(cleaned);
 
     if (typeof parsed.score === 'number' && parsed.level && Array.isArray(parsed.reasons)) {
       parsed.score = Math.min(parsed.score, 20);
+      if (typeof parsed.flagged !== 'boolean') parsed.flagged = parsed.score >= 3 || parsed.level !== 'Low';
       return res.status(200).json(parsed);
     } else {
       throw new Error('Unexpected response shape from Groq');
